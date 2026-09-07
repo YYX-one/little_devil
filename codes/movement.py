@@ -1,5 +1,6 @@
 from PySide6.QtCore import (
     QObject,
+    Signal,
     QTimer,
     QPropertyAnimation,
     QPoint,
@@ -8,13 +9,19 @@ from PySide6.QtCore import (
 
 
 class MovementController(QObject):
+    startup_finished = Signal()
+
     def __init__(self, devil):
         super().__init__()
 
         self.devil = devil
+        # 闲置行为计时器
+        self.idle_timer = QTimer(self)
+        self.idle_timer.timeout.connect(
+            self.random_idle_action
+        )
 
-        # 启动动作完成后，才进入后续行为
-        self.startup_finished = False
+        
 
     def start_startup_movement(self):
         """花生酱启动时的一套固定动作"""
@@ -122,8 +129,36 @@ class MovementController(QObject):
         self.right_animation.start()
 
     def finish_startup_movement(self):
-        """启动动作结束"""
+    #启动动作结束
 
-        self.startup_finished = True
+        self.startup_finished.emit()
+        self.idle_timer.start(5000)
 
-        print("花生酱：Rise and shine, you tedious fool.")
+
+    def random_idle_action(self):
+    #随机决定花生酱是否进行闲置行为
+
+        import random
+
+        # 10%的概率触发行为
+        if random.random() < 0.1:
+            self.spin_clockwise()
+
+    def spin_clockwise(self):
+        """顺时针旋转两圈"""
+
+        self.spin_animation = QPropertyAnimation(
+            self.devil,
+            b"angle"
+        )
+
+        self.spin_animation.setDuration(2000)
+
+        self.spin_animation.setStartValue(0)
+        self.spin_animation.setEndValue(720)
+
+        self.spin_animation.setEasingCurve(
+            QEasingCurve.InOutQuad
+        )
+
+        self.spin_animation.start()

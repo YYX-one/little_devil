@@ -1,10 +1,11 @@
 from PySide6.QtWidgets import QApplication, QLabel
-from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt, QPoint, Property
+from PySide6.QtGui import QPixmap, QPainter
 import sys
 from pathlib import Path
 
 from movement import MovementController
+from dialogue import DialogueController
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 IMAGE_PATH = BASE_DIR / "assets" / "mini_devil.png"
@@ -13,6 +14,7 @@ IMAGE_PATH = BASE_DIR / "assets" / "mini_devil.png"
 class LittleDevil(QLabel):
     def __init__(self):
         super().__init__()
+        self._angle = 0
 
         # 窗口设置
         self.setWindowFlags(
@@ -23,22 +25,27 @@ class LittleDevil(QLabel):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # 加载恶魔图片
-        pixmap = QPixmap(str(IMAGE_PATH))
+        self.original_pixmap = QPixmap(str(IMAGE_PATH))
 
-        pixmap = pixmap.scaled(
+        self.original_pixmap = self.original_pixmap.scaled(
             200,
             200,
             Qt.KeepAspectRatio,
             Qt.SmoothTransformation
         )
 
-        self.setPixmap(pixmap)
+        self.setPixmap(self.original_pixmap)
 
         # 鼠标拖动
         self.drag_offset = QPoint()
 
         # 创建移动控制器
         self.movement = MovementController(self)
+        # 创建对话控制器
+        self.dialogue = DialogueController(self)
+        self.movement.startup_finished.connect(
+            self.dialogue.show_dialogue
+        )
 
     # 鼠标按下
     def mousePressEvent(self, event):
@@ -60,6 +67,42 @@ class LittleDevil(QLabel):
     def mouseDoubleClickEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.close()
+
+    
+
+    def get_angle(self):
+        return self._angle
+
+    def set_angle(self, angle):
+        self._angle = angle
+        self.update()
+
+    angle = Property(float, get_angle, set_angle)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+
+        painter.setRenderHint(
+            QPainter.SmoothPixmapTransform
+        )
+
+        painter.translate(
+            self.width() / 2,
+            self.height() / 2
+        )
+
+        painter.rotate(self.angle)
+
+        painter.translate(
+            -self.width() / 2,
+            -self.height() / 2
+        )
+
+        painter.drawPixmap(
+            0,
+            0,
+            self.original_pixmap
+        )
 
 
 app = QApplication(sys.argv)
