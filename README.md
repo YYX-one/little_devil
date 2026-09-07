@@ -82,7 +82,7 @@ Implemented:
 
 ### Requirements
 
-* Python 3.x
+* Python 3.13.3
 * PySide6
 
 ### Run
