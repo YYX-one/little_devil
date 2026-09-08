@@ -21,8 +21,6 @@ class MovementController(QObject):
             self.random_idle_action
         )
 
-        
-
     def start_startup_movement(self):
         """花生酱启动时的一套固定动作"""
 
@@ -129,14 +127,13 @@ class MovementController(QObject):
         self.right_animation.start()
 
     def finish_startup_movement(self):
-    #启动动作结束
+        # 启动动作结束
 
         self.startup_finished.emit()
         self.idle_timer.start(5000)
 
-
     def random_idle_action(self):
-    #随机决定花生酱是否进行闲置行为
+        # 随机决定花生酱是否进行闲置行为
 
         import random
 
@@ -161,4 +158,129 @@ class MovementController(QObject):
             QEasingCurve.InOutQuad
         )
 
+        self.spin_animation.finished.connect(
+            self.pause_after_first_spin
+        )
+
         self.spin_animation.start()
+
+    def pause_after_first_spin(self):
+        """第一次旋转结束后的停顿"""
+
+        QTimer.singleShot(
+            1000,
+            self.spin_counterclockwise
+        )
+
+    def spin_counterclockwise(self):
+        """快速逆时针旋转三圈"""
+
+        self.spin_animation = QPropertyAnimation(
+            self.devil,
+            b"angle"
+        )
+
+        self.spin_animation.setDuration(900)
+
+        self.spin_animation.setStartValue(720)
+        self.spin_animation.setEndValue(-360)
+
+        self.spin_animation.setEasingCurve(
+            QEasingCurve.InOutQuad
+        )
+
+        self.spin_animation.finished.connect(
+            self.spin_fast_clockwise
+        )
+
+        self.spin_animation.start()
+
+    def spin_fast_clockwise(self):
+        """高速顺时针旋转十圈"""
+
+        self.spin_animation = QPropertyAnimation(
+            self.devil,
+            b"angle"
+        )
+
+        self.spin_animation.setDuration(1500)
+
+        self.spin_animation.setStartValue(-360)
+        self.spin_animation.setEndValue(3240)
+
+        self.spin_animation.setEasingCurve(
+            QEasingCurve.Linear
+        )
+
+        self.spin_animation.finished.connect(
+            self.pause_before_jump
+        )
+
+        self.spin_animation.start()
+
+    def pause_before_jump(self):
+        """高速旋转结束后的停顿"""
+
+        QTimer.singleShot(
+            1000,
+            self.jump_one
+        )
+
+    def jump_one(self):
+        """第一次跳跃"""
+
+        original_pos = self.devil.pos()
+
+        self.jump_animation = QPropertyAnimation(
+            self.devil,
+            b"pos"
+        )
+
+        self.jump_animation.setDuration(300)
+
+        self.jump_animation.setStartValue(
+            original_pos
+        )
+
+        self.jump_animation.setKeyValueAt(
+            0.5,
+            original_pos + QPoint(0, -30)
+        )
+
+        self.jump_animation.setEndValue(
+            original_pos
+        )
+
+        self.jump_animation.finished.connect(
+            self.jump_two
+        )
+
+        self.jump_animation.start()
+
+    def jump_two(self):
+        """第二次跳跃"""
+
+        original_pos = self.devil.pos()
+
+        self.jump_animation = QPropertyAnimation(
+            self.devil,
+            b"pos"
+        )
+
+        self.jump_animation.setDuration(300)
+
+        self.jump_animation.setStartValue(
+            original_pos
+        )
+
+        self.jump_animation.setKeyValueAt(
+            0.5,
+            original_pos + QPoint(0, -30)
+        )
+
+        self.jump_animation.setEndValue(
+            original_pos
+        )
+
+        # 原代码缺少这一句，导致第二次跳跃后动画链中断，现补上
+        self.jump_animation.start()

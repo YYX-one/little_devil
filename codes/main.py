@@ -86,16 +86,24 @@ class LittleDevil(QLabel):
             QPainter.SmoothPixmapTransform
         )
 
+    # 整张 pixmap 的中心
+        pixmap_center_x = self.original_pixmap.width() / 2
+        pixmap_center_y = self.original_pixmap.height() / 2
+
+    # 花生酱本体的中心
+        pivot_x = 84
+        pivot_y = 55
+
         painter.translate(
-            self.width() / 2,
-            self.height() / 2
+            pivot_x,
+            pivot_y
         )
 
         painter.rotate(self.angle)
 
         painter.translate(
-            -self.width() / 2,
-            -self.height() / 2
+            -pivot_x,
+            -pivot_y
         )
 
         painter.drawPixmap(
