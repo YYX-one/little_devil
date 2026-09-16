@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication, QLabel, QMenu
 from PySide6.QtCore import Qt, QPoint, Property
 from PySide6.QtGui import QPixmap, QPainter
 import sys
@@ -67,6 +67,17 @@ class LittleDevil(QLabel):
     def mouseDoubleClickEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.close()
+
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+
+        talk_action = menu.addAction("Talk")
+
+        action = menu.exec(event.globalPos())
+
+        if action == talk_action:
+            self.dialogue.open_chat()
 
     
 
